@@ -90,6 +90,8 @@ struct ViewControllerTemplateFactory {
     private static func defaultViewTemplate(viewName: String, path: String) -> Template {
         let location: URL = URL(fileURLWithPath: "\(path)/\(viewName).swift")
         let contents: String = """
+        \(Template.makeCopyrightContents(filename: viewName))
+        
         import UIKit
         
         final class \(viewName): UIView {
@@ -123,16 +125,20 @@ struct ViewControllerTemplateFactory {
     private static func defaultControllerTemplate(viewControllerName: String, viewName: String, path: String) -> Template {
         let location: URL = URL(fileURLWithPath: "\(path)/\(viewControllerName).swift")
         let contents: String = """
+        \(Template.makeCopyrightContents(filename: viewName))
+
         import UIKit
         
         final class \(viewControllerName): UIViewController {
         
             // MARK: - Properties
         
+            private let _view: \(viewName) = \(viewName)()
+        
             // MARK: - View Lifecycle
         
             override func loadView() {
-                self.view = \(viewName)()
+                self.view = self._view
             }
         
             override func viewDidLoad() {
@@ -154,6 +160,7 @@ struct ViewControllerTemplateFactory {
     private static func tableViewTemplate(viewName: String, path: String) -> Template {
         let location: URL = URL(fileURLWithPath: "\(path)/\(viewName).swift")
         let contents: String = """
+        \(Template.makeCopyrightContents(filename: viewName))
         
         import UIKit
         
@@ -197,6 +204,7 @@ struct ViewControllerTemplateFactory {
     private static func tableViewControllerTemplate(viewControllerName: String, viewName: String, path: String) -> Template {
         let location: URL = URL(fileURLWithPath: "\(path)/\(viewControllerName).swift")
         let contents: String = """
+        \(Template.makeCopyrightContents(filename: viewName))
         
         import UIKit
         
@@ -205,6 +213,7 @@ struct ViewControllerTemplateFactory {
             // MARK: - Properties
         
             private let dataSource: DataSource
+            private let _view: \(viewName) = \(viewName)()
         
             var tableView: UITableView {
                 return (self.view as! \(viewName)).tableView
@@ -217,10 +226,14 @@ struct ViewControllerTemplateFactory {
                 super.init(nibName: nibNameOrNil, bundle: nibBundleOrNil)
             }
         
+            required init?(coder aDecoder: NSCoder) {
+                fatalError("init(coder:) has not been implemented")
+            }
+        
             // MARK: - View Lifecycle
         
             override func loadView() {
-                self.view = \(viewName)()
+                self.view = self._view
             }
         
             override func viewDidLoad() {
@@ -236,6 +249,7 @@ struct ViewControllerTemplateFactory {
     private static func tableViewDataSourceTemplate(viewControllerName: String, path: String) -> Template {
         let location: URL = URL(fileURLWithPath: "\(path)/\(viewControllerName)+DataSource.swift")
         let contents: String = """
+        \(Template.makeCopyrightContents(filename: viewControllerName))
         
         import UIKit
         
@@ -278,7 +292,8 @@ struct ViewControllerTemplateFactory {
     private static func collectionViewTemplate(viewName: String, path: String) -> Template {
         let location: URL = URL(fileURLWithPath: "\(path)/\(viewName).swift")
         let contents: String = """
-        
+        \(Template.makeCopyrightContents(filename: viewName))
+
         import UIKit
         
         final class \(viewName): UIView {
@@ -321,7 +336,8 @@ struct ViewControllerTemplateFactory {
     private static func collectionViewControllerTemplate(viewControllerName: String, viewName: String, path: String) -> Template {
         let location: URL = URL(fileURLWithPath: "\(path)/\(viewControllerName).swift")
         let contents: String = """
-        
+        \(Template.makeCopyrightContents(filename: viewControllerName))
+
         import UIKit
         
         final class \(viewControllerName): UIViewController {
@@ -329,6 +345,7 @@ struct ViewControllerTemplateFactory {
             // MARK: - Properties
         
             private let dataSource: DataSource
+            private let _view: \(viewName) = \(viewName)()
         
             var collectionView: UICollectionView {
                 return (self.view as! \(viewName)).collectionView
@@ -341,10 +358,14 @@ struct ViewControllerTemplateFactory {
                 super.init(nibName: nibNameOrNil, bundle: nibBundleOrNil)
             }
         
+            required init?(coder aDecoder: NSCoder) {
+                fatalError("init(coder:) has not been implemented")
+            }
+        
             // MARK: - View Lifecycle
         
             override func loadView() {
-                self.view = \(viewName)()
+                self.view = self._view
             }
         
             override func viewDidLoad() {
@@ -360,7 +381,8 @@ struct ViewControllerTemplateFactory {
     private static func collectionViewDataSourceTemplate(viewControllerName: String, path: String) -> Template {
         let location: URL = URL(fileURLWithPath: "\(path)/\(viewControllerName)+DataSource.swift")
         let contents: String = """
-        
+        \(Template.makeCopyrightContents(filename: viewControllerName))
+
         import UIKit
         
         extension \(viewControllerName) {
