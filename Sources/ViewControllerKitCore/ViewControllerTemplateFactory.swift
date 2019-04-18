@@ -216,7 +216,7 @@ struct ViewControllerTemplateFactory {
             private let _view: \(viewName) = \(viewName)()
         
             var tableView: UITableView {
-                return (self.view as! \(viewName)).tableView
+                return self._view.tableView
             }
         
             // MARK: - Init
@@ -238,10 +238,18 @@ struct ViewControllerTemplateFactory {
         
             override func viewDidLoad() {
                 super.viewDidLoad()
-                self.dataSource.viewController = self
+                self.configureTableView()
             }
         }
+        // MARK: - Private
+        private extension \(viewControllerName) {
         
+            func configureTableView() {
+                self.tableView.dataSource = self.dataSource
+                self.dataSource.viewController = self
+            }
+        
+        }
         """
         return Template(location: location, contents: contents)
     }
@@ -348,7 +356,7 @@ struct ViewControllerTemplateFactory {
             private let _view: \(viewName) = \(viewName)()
         
             var collectionView: UICollectionView {
-                return (self.view as! \(viewName)).collectionView
+                return self._view.collectionView
             }
         
             // MARK: - Init
@@ -370,10 +378,18 @@ struct ViewControllerTemplateFactory {
         
             override func viewDidLoad() {
                 super.viewDidLoad()
-                self.dataSource.viewController = self
+                self.configureCollectionView()
             }
         }
+        // MARK: - Private
+        private extension \(viewControllerName) {
         
+            func configureCollectionView() {
+                self.collectionView.dataSource = self.dataSource
+                self.dataSource.viewController = self
+            }
+        
+        }
         """
         return Template(location: location, contents: contents)
     }
