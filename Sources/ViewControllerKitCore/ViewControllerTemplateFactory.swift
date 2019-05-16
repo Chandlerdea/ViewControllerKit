@@ -11,7 +11,9 @@ struct ViewControllerTemplateFactory {
     
     static func makeTemplates(with arguments: Arguments) -> [Template] {
         var result: [Template] = []
-        result.append(self.viewTemplate(with: arguments))
+        if let viewTemplate: Template = self.viewTemplate(with: arguments) {
+            result.append(viewTemplate)
+        }
         result.append(self.controllerTemplate(with: arguments))
         if let dataSourceTemplate: Template = self.dataSourceTempate(with: arguments) {
             result.append(dataSourceTemplate)
@@ -19,7 +21,7 @@ struct ViewControllerTemplateFactory {
         return result
     }
     
-    private static func viewTemplate(with arguments: Arguments) -> Template {
+    private static func viewTemplate(with arguments: Arguments) -> Template? {
         let result: Template
         switch arguments.viewType {
         case .view:
@@ -27,16 +29,8 @@ struct ViewControllerTemplateFactory {
                 viewName: arguments.viewName,
                 path: arguments.viewControllerPath
             )
-        case .table:
-            result = self.tableViewTemplate(
-                viewName: arguments.viewName,
-                path: arguments.viewControllerPath
-            )
-        case .collection:
-            result = self.collectionViewTemplate(
-                viewName: arguments.viewName,
-                path: arguments.viewControllerPath
-            )
+        case .table, .collection:
+            return .none
         }
         return result
     }
@@ -53,13 +47,11 @@ struct ViewControllerTemplateFactory {
         case .table:
             result = self.tableViewControllerTemplate(
                 viewControllerName: arguments.viewControllerName,
-                viewName: arguments.viewName,
                 path: arguments.viewControllerPath
             )
         case .collection:
             result = self.collectionViewControllerTemplate(
                 viewControllerName: arguments.viewControllerName,
-                viewName: arguments.viewName,
                 path: arguments.viewControllerPath
             )
         }
@@ -157,54 +149,10 @@ struct ViewControllerTemplateFactory {
     
     // MARK: - Table View Controller Templates
     
-    private static func tableViewTemplate(viewName: String, path: String) -> Template {
-        let location: URL = URL(fileURLWithPath: "\(path)/\(viewName).swift")
-        let contents: String = """
-        \(Template.makeCopyrightContents(filename: viewName))
-        
-        import UIKit
-        
-        final class \(viewName): UIView {
-        
-            // MARK: - Properties
-        
-            let tableView: UITableView = UITableView()
-        
-            // MARK: - Init
-        
-            override init(frame: CGRect) {
-                super.init(frame: frame)
-                self.setup()
-            }
-        
-            required init?(coder aDecoder: NSCoder) {
-                fatalError("init(coder:) has not been implemented")
-            }
-        
-            // MARK: - Public Methods
-        
-            override func layoutSubviews() {
-                super.layoutSubviews()
-                self.tableView.frame = self.bounds
-            }
-        
-        }
-        // MARK: - Private Methods
-        private extension \(viewName) {
-        
-            func setup() {
-                self.addSubview(self.tableView)
-            }
-        }
-        
-        """
-        return Template(location: location, contents: contents)
-    }
-    
-    private static func tableViewControllerTemplate(viewControllerName: String, viewName: String, path: String) -> Template {
+    private static func tableViewControllerTemplate(viewControllerName: String, path: String) -> Template {
         let location: URL = URL(fileURLWithPath: "\(path)/\(viewControllerName).swift")
         let contents: String = """
-        \(Template.makeCopyrightContents(filename: viewName))
+        \(Template.makeCopyrightContents(filename: viewControllerName))
         
         import UIKit
         
@@ -213,11 +161,10 @@ struct ViewControllerTemplateFactory {
             // MARK: - Properties
         
             private let dataSource: DataSource
-            private let _view: \(viewName) = \(viewName)()
-        
-            var tableView: UITableView {
-                return self._view.tableView
-            }
+            private let tableView: UITableView = {
+                let tableView: UITableView = UITableView()
+                return tableView
+            }()
         
             // MARK: - Init
         
@@ -233,7 +180,7 @@ struct ViewControllerTemplateFactory {
             // MARK: - View Lifecycle
         
             override func loadView() {
-                self.view = self._view
+                self.view = self.tableView
             }
         
             override func viewDidLoad() {
@@ -267,11 +214,7 @@ struct ViewControllerTemplateFactory {
         
                 // MARK: - Properties
         
-                weak var viewController: \(viewControllerName)? {
-                    didSet {
-                        self.viewController?.tableView.dataSource = self
-                    }
-                }
+                weak var viewController: \(viewControllerName)?
         
                 // MARK: - UITableViewDataSource
         
@@ -296,52 +239,8 @@ struct ViewControllerTemplateFactory {
     }
     
     // MARK: - Collection View Controller Templates
-    
-    private static func collectionViewTemplate(viewName: String, path: String) -> Template {
-        let location: URL = URL(fileURLWithPath: "\(path)/\(viewName).swift")
-        let contents: String = """
-        \(Template.makeCopyrightContents(filename: viewName))
 
-        import UIKit
-        
-        final class \(viewName): UIView {
-        
-            // MARK: - Properties
-        
-            let collectionView: UICollectionView = UICollectionView()
-        
-            // MARK: - Init
-        
-            override init(frame: CGRect) {
-                super.init(frame: frame)
-                self.setup()
-            }
-        
-            required init?(coder aDecoder: NSCoder) {
-                fatalError("init(coder:) has not been implemented")
-            }
-        
-            // MARK: - Public Methods
-        
-            override func layoutSubviews() {
-                super.layoutSubviews()
-                self.collectionView.frame = self.bounds
-            }
-        
-        }
-        // MARK: - Private Methods
-        private extension \(viewName) {
-        
-            func setup() {
-                self.addSubview(self.collectionView)
-            }
-        }
-        
-        """
-        return Template(location: location, contents: contents)
-    }
-    
-    private static func collectionViewControllerTemplate(viewControllerName: String, viewName: String, path: String) -> Template {
+    private static func collectionViewControllerTemplate(viewControllerName: String, path: String) -> Template {
         let location: URL = URL(fileURLWithPath: "\(path)/\(viewControllerName).swift")
         let contents: String = """
         \(Template.makeCopyrightContents(filename: viewControllerName))
@@ -353,11 +252,10 @@ struct ViewControllerTemplateFactory {
             // MARK: - Properties
         
             private let dataSource: DataSource
-            private let _view: \(viewName) = \(viewName)()
-        
-            var collectionView: UICollectionView {
-                return self._view.collectionView
-            }
+            private let collectionView: UICollectionView = {
+                let collectionView: UICollectionView = UICollectionView()
+                return collectionView
+            }()
         
             // MARK: - Init
         
@@ -373,7 +271,7 @@ struct ViewControllerTemplateFactory {
             // MARK: - View Lifecycle
         
             override func loadView() {
-                self.view = self._view
+                self.view = self.collectionView
             }
         
             override func viewDidLoad() {
@@ -407,11 +305,7 @@ struct ViewControllerTemplateFactory {
         
                 // MARK: - Properties
         
-                weak var viewController: \(viewControllerName)? {
-                    didSet {
-                        self.viewController?.collectionView.dataSource = self
-                    }
-                }
+                weak var viewController: \(viewControllerName)?
         
                 // MARK: - UICollectionViewDataSource
         
